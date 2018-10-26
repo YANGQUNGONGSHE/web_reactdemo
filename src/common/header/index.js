@@ -1,10 +1,42 @@
-import React from 'react';
+import React, { PureComponent } from 'react';
 import {connect} from 'react-redux';
 import {CSSTransition} from 'react-transition-group';
-import {getHeadSearchFocused,getHeadSearchCancelFocus} from '../../store/actionCreator';
-import {HeaderWrapper,Logo,Nav,NavItem,NavSearch,Addition,Button,SearchWrapper} from './style';
+import {actionCreator} from './store';
+import {
+  HeaderWrapper,
+  Logo,Nav,
+  NavItem,
+  NavSearch,
+  Addition,
+  Button,
+  SearchWrapper,
+  SearchInfo,
+  SearchInfoTitle,
+  SearchInfoSwitch,
+  SearchInfoItem,
+  SearchInfoList,
+} from './style';
 
-const Header  = (props) =>{
+class  Header extends PureComponent{
+    render(){
+      const {focused,list,handleOnFocus,handleOnBlur} = this.props;
+      const getSearchInfo = focused ?
+        <SearchInfo>
+          <SearchInfoTitle>
+            热门搜索
+            <SearchInfoSwitch>
+              换一批
+            </SearchInfoSwitch>
+          </SearchInfoTitle>
+          <SearchInfoList>
+            {
+              list.map((item,index,arr)=>
+              <SearchInfoItem key = {item}>{item}</SearchInfoItem>
+            )
+            }
+          </SearchInfoList>
+        </SearchInfo>:null;
+
     return(
       <HeaderWrapper>
         <Logo/>
@@ -17,17 +49,18 @@ const Header  = (props) =>{
           </NavItem>
           <SearchWrapper>
             <CSSTransition
-              in = {props.focused}
+              in = {focused}
               timeout = {200}
               classNames = 'slide'
             >
               <NavSearch
-                className = {props.focused ? 'focused':''}
-                onFocus = {props.handleOnFocus}
-                onBlur = {props.handleOnBlur}
+                className = {focused ? 'focused':''}
+                onFocus = {handleOnFocus}
+                onBlur = {handleOnBlur}
               />
             </CSSTransition>
-            <i className = {props.focused ? 'focused iconfont':'iconfont'}>&#xe62d;</i>
+            <i className = {focused ? 'focused iconfont':'iconfont'}>&#xe62d;</i>
+            {getSearchInfo}
           </SearchWrapper>
         </Nav>
         <Addition>
@@ -39,13 +72,14 @@ const Header  = (props) =>{
         </Addition>
       </HeaderWrapper>
     );
+  }
 }
-
 
 const mapStateToProps = (state) =>{
 
   return {
-    focused:state.focused,
+    focused:state.getIn(['header','focused']),//  前面等价于 state.get('header').get('focused')
+    list:state.getIn(['header','list']),
   };
 };
 
@@ -53,11 +87,11 @@ const mapDispatchToProps = (dispatch)=>{
   
   return {
     handleOnFocus(){
-      const action = getHeadSearchFocused();
-      dispatch(action);
+      dispatch(actionCreator.getInitHeaderListData());
+      dispatch(actionCreator.getHeadSearchFocused());
     },
     handleOnBlur(){
-      const action = getHeadSearchCancelFocus();
+      const action = actionCreator.getHeadSearchCancelFocus();
       dispatch(action);
     }
   };
