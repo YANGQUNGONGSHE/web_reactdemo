@@ -13,9 +13,21 @@ export const getHeadSearchFocused = ()=>({
 });
 
 
-
 export const getHeadSearchCancelFocus = ()=>({
   type:actionTypes.HEAD_SEARCH_CANCELFOCUS
+});
+
+export const getMouseEnter = ()=>({
+  type:actionTypes.HAED_SEARCH_MOUSE_ENTER
+});
+
+export const getMouseLeave = ()=>({
+  type:actionTypes.HEAD_SEARCH_MOUSE_LEAVE
+});
+
+export const getChangePage = (page)=>({
+  type:actionTypes.HEAD_SEARCH_CHANGE_PAGE,
+  page
 });
 
 export const getInitHeaderListData = () =>{
@@ -26,4 +38,4 @@ export const getInitHeaderListData = () =>{
       console.log(error);
     })
   }
-}
+};

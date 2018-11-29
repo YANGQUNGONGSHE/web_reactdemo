@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import {connect} from 'react-redux';
 import {CSSTransition} from 'react-transition-group';
 import {actionCreator} from './store';
+import axios from 'axios';
 import {
   HeaderWrapper,
   Logo,Nav,
@@ -17,23 +18,35 @@ import {
   SearchInfoList,
 } from './style';
 
+
 class  Header extends PureComponent{
+
     render(){
-      const {focused,list,handleOnFocus,handleOnBlur} = this.props;
-      const getSearchInfo = focused ?
-        <SearchInfo>
+
+      let {focused,mouseIn,page,totalPage,list,handleOnFocus,handleOnBlur,handleMouseEnter,handleMouseLeave,handleChangePage} = this.props;
+
+      let newList = list;
+      let pageList = [];
+      if(newList.length){
+        for(let i=(page - 1) * 10; i< page * 10; i++){
+          pageList.push( <SearchInfoItem key = {newList[i]}>{newList[i]}</SearchInfoItem>)
+        }
+      }
+      const getSearchInfo = focused || mouseIn?
+        <SearchInfo
+          onMouseEnter = {handleMouseEnter}
+          onMouseLeave = {handleMouseLeave}
+        >
           <SearchInfoTitle>
             热门搜索
-            <SearchInfoSwitch>
+            <SearchInfoSwitch
+              onClick = {()=>handleChangePage(page,totalPage)}
+            >
               换一批
             </SearchInfoSwitch>
           </SearchInfoTitle>
           <SearchInfoList>
-            {
-              list.map((item,index,arr)=>
-              <SearchInfoItem key = {item}>{item}</SearchInfoItem>
-            )
-            }
+            {pageList}
           </SearchInfoList>
         </SearchInfo>:null;
 
@@ -55,7 +68,7 @@ class  Header extends PureComponent{
             >
               <NavSearch
                 className = {focused ? 'focused':''}
-                onFocus = {handleOnFocus}
+                onFocus = {()=>handleOnFocus(list)}
                 onBlur = {handleOnBlur}
               />
             </CSSTransition>
@@ -68,7 +81,8 @@ class  Header extends PureComponent{
               <i className="iconfont">&#xe615;</i>
               写文章
               </Button>
-          <Button className = 'reg'>注册</Button>
+          <Button 
+            className = 'reg'>注册</Button>
         </Addition>
       </HeaderWrapper>
     );
@@ -80,21 +94,38 @@ const mapStateToProps = (state) =>{
   return {
     focused:state.getIn(['header','focused']),//  前面等价于 state.get('header').get('focused')
     list:state.getIn(['header','list']),
+    mouseIn:state.getIn(['header','mouseIn']),
+    page:state.getIn(['header','page']),
+    totalPage:state.getIn(['header','totalPage']),
   };
 };
 
 const mapDispatchToProps = (dispatch)=>{
   
   return {
-    handleOnFocus(){
-      dispatch(actionCreator.getInitHeaderListData());
+    handleOnFocus(list){
+      (list.size === 0 && dispatch(actionCreator.getInitHeaderListData()));
       dispatch(actionCreator.getHeadSearchFocused());
     },
     handleOnBlur(){
       const action = actionCreator.getHeadSearchCancelFocus();
       dispatch(action);
+    },
+    handleMouseEnter(){
+      dispatch(actionCreator.getMouseEnter());
+    },
+    handleMouseLeave(){
+      dispatch(actionCreator.getMouseLeave());
+    },
+    handleChangePage(page,totalPage){
+      if(page<totalPage){
+        dispatch(actionCreator.getChangePage(page+1));
+      }else{
+        dispatch(actionCreator.getChangePage(1));
+      }
     }
   };
 };
 
 export default connect(mapStateToProps,mapDispatchToProps)(Header);
+
